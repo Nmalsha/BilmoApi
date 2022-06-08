@@ -17,6 +17,12 @@ class ApiProductController extends AbstractController
 
         $allProducts = $productRepository->findAll();
         dd($allProducts);
+        // $data = $this->get('jms_serializer')->serialize($allProducts, 'json', SerializationContext::create()->setGroups(array('list')));
+
+        // $response = new Response($data);
+        // $response->headers->set('Content-Type', 'application/json');
+
+        // return $response;
 
         return $this->render('api_product/index.html.twig', [
             'controller_name' => 'ApiProductController',
