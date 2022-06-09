@@ -78,6 +78,9 @@
             "config/packages/prod/jms_serializer.yaml"
         ]
     },
+    "knplabs/knp-paginator-bundle": {
+        "version": "v5.8.0"
+    },
     "nelmio/cors-bundle": {
         "version": "2.2",
         "recipe": {

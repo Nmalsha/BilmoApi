@@ -46,7 +46,7 @@ class ApiProductController extends AbstractController
     /**
      * @Route("/api/product/{id}", name="app_api_product_show",methods={"GET"})
      */
-    public function showProduct(ProductRepository $productRepository): Response
+    public function showProduct(ProductRepository $productRepository)
     {
 
         // $oneProduct = $productRepository->findOneBy(['id' => $id]);
