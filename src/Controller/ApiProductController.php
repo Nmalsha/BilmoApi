@@ -2,7 +2,9 @@
 
 namespace App\Controller;
 
+use App\Entity\Product;
 use App\Repository\ProductRepository;
+use JMS\Serializer\SerializationContext;
 use JMS\Serializer\SerializerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -10,13 +12,6 @@ use Symfony\Component\Routing\Annotation\Route;
 
 class ApiProductController extends AbstractController
 {
-    // private $serializer;
-
-    // public function __construct(
-    //     SerializerInterface $serializer
-    // ) {
-    //     $this->serialize = $serializer;
-    // }
 
     /**
      * @Route("/api/product", name="app_api_product",methods={"GET"})
@@ -25,41 +20,28 @@ class ApiProductController extends AbstractController
     public function index(ProductRepository $productRepository, SerializerInterface $serializer)
     {
 
-        // $data = $this->get('jms_serializer')->serialize($allProducts, 'json');
-        // // // dd($data);
-        // $response = new Response($data);
-        // $response->headers->set('Content-Type', 'application/json');
-
         return new JsonResponse(
-            $serializer->serialize($productRepository->findAll(), "json"),
+            $serializer->serialize($productRepository->findAll(), "json", SerializationContext::create()->setGroups(array('list'))),
             JsonResponse::HTTP_OK,
             [],
             true
 
         );
 
-        // return $this->render('api_product/index.html.twig', [
-        //     'controller_name' => 'ApiProductController',
-        // ]);
     }
 
     /**
      * @Route("/api/product/{id}", name="app_api_product_show",methods={"GET"})
      */
-    public function showProduct(ProductRepository $productRepository)
+    public function showProduct(Product $product, SerializerInterface $serializer)
     {
 
-        // $oneProduct = $productRepository->findOneBy(['id' => $id]);
-        // dd($oneProduct);
-        // $data = $this->get('jms_serializer')->serialize($allProducts, 'json', SerializationContext::create()->setGroups(array('list')));
+        return new JsonResponse(
+            $serializer->serialize($product, "json", SerializationContext::create()->setGroups(array('list'))),
+            JsonResponse::HTTP_OK,
+            [],
+            true
 
-        // $response = new Response($data);
-        // $response->headers->set('Content-Type', 'application/json');
-
-        // return $response;
-
-        return $this->render('api_product/index.html.twig', [
-            'controller_name' => 'ApiProductController',
-        ]);
+        );
     }
 }

@@ -20,24 +20,28 @@ class Product
      * @ORM\GeneratedValue
      * @ORM\Column(type="integer")
      * @Serializer\Groups({"list"})
+     *
      */
     private $id;
 
     /**
      * @ORM\Column(type="string", length=255)
      * @Serializer\Groups({"list"})
+     *
      */
     private $name;
 
     /**
      * @ORM\Column(type="string", length=255)
      * @Serializer\Groups({"list"})
+     *
      */
     private $description;
 
     /**
      * @ORM\Column(type="integer")
      * @Serializer\Groups({"list"})
+     *
      */
     private $price;
 
