@@ -4,6 +4,8 @@ namespace App\Controller;
 
 use App\Entity\Product;
 use App\Repository\ProductRepository;
+use FOS\RestBundle\Controller\Annotations\Get;
+use FOS\RestBundle\Controller\Annotations\View;
 use JMS\Serializer\SerializationContext;
 use JMS\Serializer\SerializerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -31,7 +33,13 @@ class ApiProductController extends AbstractController
     }
 
     /**
-     * @Route("/api/product/{id}", name="app_api_product_show",methods={"GET"})
+     *
+     *  * @Get(
+     *     path = "/api/product/{id}",
+     *     name = "app_api_product_show",
+     *     requirements = {"id"="\d+"}
+     * )
+     *  @View
      */
     public function showProduct(Product $product, SerializerInterface $serializer)
     {
