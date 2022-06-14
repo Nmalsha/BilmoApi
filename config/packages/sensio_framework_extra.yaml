@@ -1,3 +1,7 @@
 sensio_framework_extra:
-    router:
-        annotations: false
+  router:
+    annotations: true
+
+fos_rest:
+  body_converter:
+    enabled: true
