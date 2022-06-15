@@ -19,13 +19,13 @@ class User
      * @ORM\Id
      * @ORM\GeneratedValue
      * @ORM\Column(type="integer")
-     * @Serializer\Groups({"list"})
+     * @Serializer\Groups({"list", "details"})
      */
     private $id;
 
     /**
      * @ORM\Column(type="string", length=100)
-     * @Serializer\Groups({"list"})
+     * @Serializer\Groups({"list" , "details"})
      * @Assert\NotBlank(groups={"Create"})
      */
     private $firstName;
@@ -51,21 +51,20 @@ class User
 
     /**
      * @ORM\Column(type="string", length=255,nullable=true )
-     * @Serializer\Groups({ "details"})
+     * @Serializer\Groups({ "list","details"})
      */
     private $role;
+    /**
+     * @ORM\Column(type="string", length=255)
+     * @Serializer\Groups({ "details"})
+     */
+    private $email;
 
     /**
      * @ORM\ManyToOne(targetEntity=Customer::class, inversedBy="users",cascade={"all"}, fetch="EAGER")
      * @Serializer\Groups({"list","details"})
      */
     private $customer;
-
-    /**
-     * @ORM\Column(type="string", length=255)
-     * @Serializer\Groups({ "details"})
-     */
-    private $email;
 
     public function getId(): ?int
     {
