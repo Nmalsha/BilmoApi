@@ -6,6 +6,8 @@ use App\Repository\CustomerRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
+use JMS\Serializer\Annotation as Serializer;
+use Symfony\Component\Serializer\Annotation\Groups;
 
 /**
  * @ORM\Entity(repositoryClass=CustomerRepository::class)
@@ -16,26 +18,31 @@ class Customer
      * @ORM\Id
      * @ORM\GeneratedValue
      * @ORM\Column(type="integer")
+     * @Serializer\Groups({"list","details"})
      */
     private $id;
 
     /**
      * @ORM\Column(type="string", length=100, nullable=true,unique=true)
+     * @Serializer\Groups({"list","details"})
      */
     private $siret;
 
     /**
      * @ORM\Column(type="string", length=100)
+     * @Serializer\Groups({"list","details"})
      */
     private $name;
 
     /**
      * @ORM\Column(type="string", length=100)
+     * @Serializer\Groups({"list","details"})
      */
     private $email;
 
     /**
      * @ORM\Column(type="integer")
+     * @Serializer\Groups({"list","details"})
      */
     private $contactNumber;
 
@@ -46,6 +53,7 @@ class Customer
 
     /**
      * @ORM\OneToMany(targetEntity=User::class, mappedBy="customer")
+     *
      */
     private $users;
 
