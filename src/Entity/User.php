@@ -61,8 +61,9 @@ class User
     private $email;
 
     /**
-     * @ORM\ManyToOne(targetEntity=Customer::class, inversedBy="users",cascade={"all"}, fetch="EAGER")
+     * @ORM\ManyToOne(targetEntity=Customer::class, inversedBy="users",cascade={"persist"}, fetch="EAGER")
      * @Serializer\Groups({"list","details"})
+     * @ORM\JoinColumn(onDelete="CASCADE")
      */
     private $customer;
 

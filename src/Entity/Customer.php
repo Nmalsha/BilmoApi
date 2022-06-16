@@ -53,6 +53,7 @@ class Customer
 
     /**
      * @ORM\OneToMany(targetEntity=User::class, mappedBy="customer")
+     *
      */
     private $users;
 

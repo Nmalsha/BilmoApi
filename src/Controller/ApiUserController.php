@@ -116,4 +116,18 @@ class ApiUserController extends AbstractController
 
         return new JsonResponse(null, JsonResponse::HTTP_NO_CONTENT);
     }
+    /**
+     * @Route("/api/user/{id}", name="app_api_user_delete",methods={"DELETE"})
+     * @Rest\View
+     * @ParamConverter("user", converter="fos_rest.request_body")
+     */
+    public function deleteUser(User $user, EntityManagerInterface $manager)
+    {
+
+        $manager->remove($user);
+        $manager->flush();
+
+        return new JsonResponse(null, JsonResponse::HTTP_NO_CONTENT);
+    }
+
 }
