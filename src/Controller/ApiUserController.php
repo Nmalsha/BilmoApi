@@ -2,6 +2,7 @@
 
 namespace App\Controller;
 
+use App\Entity\Customer;
 use App\Entity\User;
 use App\Repository\UserRepository;
 use Doctrine\ORM\EntityManagerInterface;
@@ -72,7 +73,7 @@ class ApiUserController extends AbstractController
     public function createUser(Request $request,
         SerializerInterface $serializer,
         EntityManagerInterface $manager,
-        UrlGeneratorInterface $urlGenararor,
+        UrlGeneratorInterface $urlGenarator,
         User $user
 
     ) {
@@ -80,7 +81,7 @@ class ApiUserController extends AbstractController
         // $user = new User;
         // $form = $this->get('form.factory')->create(UserType::class, $user);
         // $form->submit($data);
-        $user->setCustomer($manager->getRepository(User::class)->findOneBy([]));
+        $user->setCustomer($manager->getRepository(Customer::class)->findOneBy([]));
 
         $manager = $this->getDoctrine()->getManager();
 
@@ -90,7 +91,7 @@ class ApiUserController extends AbstractController
         return new JsonResponse(
             $serializer->serialize($user, "json", SerializationContext::create()->setGroups(array('details'))),
             JsonResponse::HTTP_CREATED,
-            ["Location" => $urlGenararor->generate("app_api_user_create", ["id" => $user->getId()])],
+            ["Location" => $urlGenarator->generate("app_api_user_create", ["id" => $user->getId()])],
             true
 
         );
