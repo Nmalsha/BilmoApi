@@ -6,6 +6,7 @@ use App\Entity\Customer;
 use App\Entity\User;
 use App\Repository\UserRepository;
 use Doctrine\ORM\EntityManagerInterface;
+use Exception;
 //use FOS\RestBundle\Controller\AbstractFOSRestController;
 use FOS\RestBundle\Controller\Annotations as Rest;
 use FOS\RestBundle\Controller\Annotations\View;
@@ -18,6 +19,7 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 
@@ -25,6 +27,7 @@ use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 
 class ApiUserController extends AbstractController
 {
+
     /**
      * @Route("/api/users", name="app_api_users", methods={"GET"})
      * @return JsonResponse
@@ -56,13 +59,25 @@ class ApiUserController extends AbstractController
      */
     public function showUser(User $user, SerializerInterface $serializer)
     {
-        return new JsonResponse(
-            $serializer->serialize($user, "json", SerializationContext::create()->setGroups(array('details'))),
-            JsonResponse::HTTP_OK,
-            [],
-            true
+        try {
+            return new JsonResponse(
+                $serializer->serialize($user, "json", SerializationContext::create()->setGroups(array('details'))),
+                JsonResponse::HTTP_OK,
+                [],
+                true
 
-        );
+            );
+        } catch (Exception $e) {
+
+            return new JsonResponse(
+                ["error" => $e->getMessage()],
+                JsonResponse::HTTP_OK,
+                [],
+                true
+
+            );
+        }
+
     }
 
     /**
@@ -74,7 +89,8 @@ class ApiUserController extends AbstractController
         SerializerInterface $serializer,
         EntityManagerInterface $manager,
         UrlGeneratorInterface $urlGenarator,
-        User $user
+        User $user,
+        UserPasswordHasherInterface $passwordHasher
 
     ) {
         // $data = $this->container->get('jms_serializer')->deserialize($request->getContent(), 'array', 'json');
@@ -85,6 +101,16 @@ class ApiUserController extends AbstractController
 
         $manager = $this->getDoctrine()->getManager();
 
+        $plaintextPassword = $user->getPassword();
+
+        $hashedPassword = $passwordHasher->hashPassword(
+            $user,
+            $plaintextPassword
+        );
+        // dd($hashedPassword);
+        $user->setPassword($hashedPassword);
+
+        // $user->setPassword
         $manager->persist($user);
         $manager->flush();
 

@@ -5,7 +5,14 @@ security:
     Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface: "auto"
   # https://symfony.com/doc/current/security.html#loading-the-user-the-user-provider
   providers:
-    users_in_memory: { memory: null }
+    # doctrine:
+    #   id: App\Security\Provider\UserProvider
+
+    app_user_provider:
+      entity:
+        class: App\Entity\User
+        property: email
+
   firewalls:
     dev:
       pattern: ^/(_(profiler|wdt)|css|images|js)/
@@ -25,6 +32,8 @@ security:
         check_path: /api/login_check
         success_handler: lexik_jwt_authentication.handler.authentication_success
         failure_handler: lexik_jwt_authentication.handler.authentication_failure
+        username_path: email
+        password_path: password
     api_doc:
       pattern: ^/api/doc
       security: false
@@ -53,12 +62,13 @@ security:
 when@test:
   security:
     password_hashers:
+      Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface: "auto"
       # By default, password hashers are resource intensive and take time. This is
       # important to generate secure password hashes. In tests however, secure hashes
       # are not important, waste resources and increase test times. The following
       # reduces the work factor to the lowest possible values.
-      Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface:
-        algorithm: auto
-        cost: 4 # Lowest possible value for bcrypt
-        time_cost: 3 # Lowest possible value for argon
-        memory_cost: 10 # Lowest possible value for argon
+      # Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface:
+      #   algorithm: auto
+      # cost: 4 # Lowest possible value for bcrypt
+      # time_cost: 3 # Lowest possible value for argon
+      # memory_cost: 10 # Lowest possible value for argon
