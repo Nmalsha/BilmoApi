@@ -6,6 +6,8 @@ use ApiPlatform\Core\Annotation\ApiResource;
 use App\Repository\UserRepository;
 use Doctrine\ORM\Mapping as ORM;
 use JMS\Serializer\Annotation as Serializer;
+use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
+use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
 
@@ -13,7 +15,7 @@ use Symfony\Component\Validator\Constraints as Assert;
  * @ApiResource()
  * @ORM\Entity(repositoryClass=UserRepository::class)
  */
-class User
+class User implements UserInterface, PasswordAuthenticatedUserInterface
 {
     /**
      * @ORM\Id
@@ -53,7 +55,7 @@ class User
      * @ORM\Column(type="string", length=255,nullable=true )
      * @Serializer\Groups({ "list","details"})
      */
-    private $role;
+    private $roles = [];
     /**
      * @ORM\Column(type="string", length=255)
      * @Serializer\Groups({ "details"})
@@ -95,7 +97,11 @@ class User
 
         return $this;
     }
-
+/**
+ * This method can be removed in Symfony 6.0 - is not needed for apps that do not check user passwords.
+ *
+ * @see PasswordAuthenticatedUserInterface
+ */
     public function getPassword(): ?string
     {
         return $this->password;
@@ -120,9 +126,9 @@ class User
         return $this;
     }
 
-    public function getRole(): ?string
+    public function getRoles(): array
     {
-        return $this->role;
+        return ['ROLE_USER'];
     }
 
     public function setRole(string $role): self
@@ -154,5 +160,28 @@ class User
         $this->email = $email;
 
         return $this;
+    }
+
+    public function getSalt()
+    {
+        return null;
+    }
+
+    /**
+     * @return string
+     */
+    public function getUsername()
+    {
+        return $this->email;
+    }
+    /**
+     * @see UserInterface
+     */
+    public function eraseCredentials()
+    {
+    }
+    public function getUserIdentifier()
+    {
+        return (string) $this->email;
     }
 }
