@@ -25,12 +25,16 @@ class UserFixtures extends Fixture
         foreach ($customers as $customer) {
             for ($i = 0; $i < mt_rand(3, 10); $i++) {
                 $user = new User();
+                $hashedPassword = $this->hasher->hashPassword(
+                    $user,
+                    "password"
+                );
                 $user->setFirstName($faker->firstName)
                     ->setLastName($faker->lastName)
                     ->setContactNumber(0000000)
-                    ->setPassword($faker->password)
+                    ->setPassword($hashedPassword)
                     ->setEmail($faker->email)
-
+                    ->setRole(["ROLE_USER"])
                     ->setCustomer($customer);
                 $manager->persist($user);
             }
