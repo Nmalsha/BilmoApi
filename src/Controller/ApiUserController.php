@@ -186,25 +186,18 @@ class ApiUserController extends AbstractController
         CustomerRepository $customerRepository
 
     ) {
-        // $data = $this->container->get('jms_serializer')->deserialize($request->getContent(), 'array', 'json');
-        // $user = new User;
-        // $form = $this->get('form.factory')->create(UserType::class, $user);
-        // $form->submit($data);
 
         //decoding token
         $decodedJwtToken = $this->jwtManager->decode($this->tokenStorageInterface->getToken());
         if ($decodedJwtToken) {
 
-            //dd($decodedJwtToken);
             //get email of the user
             $userEmail = $decodedJwtToken['email'];
 
             //load User using email address
             $loadUser = $userRepository->loadUserByIdentifier($userEmail);
             //check if the user is admin or not
-            // if($loadUser == "ROLE_ADMIN"){
 
-            // }
             $arrayRoles = $loadUser->getRoles();
 
             foreach ($arrayRoles as $role) {
@@ -222,10 +215,9 @@ class ApiUserController extends AbstractController
                         $user,
                         $plaintextPassword
                     );
-                    // dd($hashedPassword);
+
                     $user->setPassword($hashedPassword);
 
-                    // $user->setPassword
                     $manager->persist($user);
                     $manager->flush();
 
@@ -236,33 +228,9 @@ class ApiUserController extends AbstractController
                         true
 
                     );
-                    // $userClientId = $user->getCustomer()->getId();
-                    // dd($user->getCustomer()->getId());
-                    // if ($adminClientId === $userClientId) {
-                    //     return new JsonResponse(
-                    //         $serializer->serialize($user, "json", SerializationContext::create()->setGroups(array('details'))),
-                    //         JsonResponse::HTTP_OK,
-                    //         [],
-                    //         true
-
-                    //     );
-
-                    // } else {
-                    //     return new JsonResponse('You are not the admin of this user', Response::HTTP_NOT_FOUND);
-                    // }
-                    //if the role is admin catch the user client id and get all the users belongs to the client
-
-                    // $usersOfClient = $userRepository->findBy(['customer' => $loadUser->getCustomer()->getId()]);
-                    // return new JsonResponse(
-                    //     $serializer->serialize($usersOfClient, "json", SerializationContext::create()->setGroups(array('list'))),
-                    //     JsonResponse::HTTP_OK,
-                    //     [],
-                    //     true
-
-                    // );
 
                 } else {
-                    return new JsonResponse('You are not the admin user', Response::HTTP_NOT_FOUND);
+                    return new JsonResponse('You are not the admin user to created a user', Response::HTTP_NOT_FOUND);
                 }
 
             }
@@ -284,17 +252,58 @@ class ApiUserController extends AbstractController
     public function updateUser(User $user, Request $request, SerializerInterface $serializer, EntityManagerInterface $manager, UserRepository $userRepository)
     {
 
-        $object = $userRepository->findBy(["id" => $user->getId()]);
-        $user = new DeserializationContext();
-        $user->setAttribute('deserialization-constructor-target', $object);
-        $serializer->deserialize(
-            $request->getContent(),
-            User::class, "json",
-            $user
-        );
-        $manager->flush();
+        //decoding token
+        $decodedJwtToken = $this->jwtManager->decode($this->tokenStorageInterface->getToken());
+        if ($decodedJwtToken) {
 
-        return new JsonResponse(null, JsonResponse::HTTP_NO_CONTENT);
+            //get email of the user
+            $userEmail = $decodedJwtToken['email'];
+
+            //load User using email address
+            $loadUser = $userRepository->loadUserByIdentifier($userEmail);
+            //check if the user is admin or not
+
+            $arrayRoles = $loadUser->getRoles();
+
+            foreach ($arrayRoles as $role) {
+
+                if ($role == "ROLE_ADMIN") {
+                    // dd($user);
+                    $object = $userRepository->findBy(["id" => $user->getId()]);
+                    // dd($object);
+                    $user = new DeserializationContext();
+                    $user->setAttribute('deserialization-constructor-target', $object);
+                    $serializer->deserialize(
+                        $request->getContent(),
+                        User::class, "json",
+                        $user
+                    );
+                    $manager->flush();
+
+                    return new JsonResponse(null, JsonResponse::HTTP_NO_CONTENT);
+
+                } else {
+                    return new JsonResponse('You are not the admin user to edit a user', Response::HTTP_NOT_FOUND);
+                }
+
+            }
+
+            ;
+        } else {
+            return new JsonResponse('The token was not found or expired', Response::HTTP_NOT_FOUND);
+        }
+
+        // $object = $userRepository->findBy(["id" => $user->getId()]);
+        // $user = new DeserializationContext();
+        // $user->setAttribute('deserialization-constructor-target', $object);
+        // $serializer->deserialize(
+        //     $request->getContent(),
+        //     User::class, "json",
+        //     $user
+        // );
+        // $manager->flush();
+
+        // return new JsonResponse(null, JsonResponse::HTTP_NO_CONTENT);
     }
     /**
      * @Route("/api/user/{id}", name="app_api_user_delete",methods={"DELETE"})
