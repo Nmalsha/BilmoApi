@@ -4,6 +4,7 @@ namespace App\Controller;
 
 use App\Entity\Customer;
 use App\Entity\User;
+use App\Repository\CustomerRepository;
 use App\Repository\UserRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Exception;
@@ -25,7 +26,6 @@ use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
-use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 
 //use Symfony\Component\Serializer\SerializerInterface;
 
@@ -43,7 +43,7 @@ class ApiUserController extends AbstractController
      * @return JsonResponse
      *
      */
-    public function index(JWTTokenManagerInterface $jwtManager, Request $request, UserRepository $userRepository, SerializerInterface $serializer, JWTEncoderInterface $jwtEncoder): Response
+    public function index(JWTTokenManagerInterface $jwtManager, Request $request, CustomerRepository $customerRepository, UserRepository $userRepository, SerializerInterface $serializer, JWTEncoderInterface $jwtEncoder): Response
     {
         //decoding token
         $decodedJwtToken = $this->jwtManager->decode($this->tokenStorageInterface->getToken());
@@ -58,35 +58,48 @@ class ApiUserController extends AbstractController
         // }
         $arrayRoles = $loadUser->getRoles();
         foreach ($arrayRoles as $role) {
-            dd($role);
+            if ($role == "ROLE_ADMIN") {
+
+//if the role is admin catch the user client id
+                // dd($loadUser->getCustomer()->getId());
+                // dd($loadUser->getCustomer()->getId());
+                $usersOfClient = $userRepository->findBy(['customer' => $loadUser->getCustomer()->getId()]);
+                return new JsonResponse(
+                    $serializer->serialize($usersOfClient, "json", SerializationContext::create()->setGroups(array('list'))),
+                    JsonResponse::HTTP_OK,
+                    [],
+                    true
+
+                );
+                // $usersOfClient = $customerRepository->getUsers(array('id' => $loadUser->getCustomer()->getId()));
+                dd($usersOfClient);
+
+            } else {
+                return new JsonResponse('You are not the admin user', Response::HTTP_NOT_FOUND);
+            }
+
+            dd('foeach');
         }
 
-        $bearer = $request->headers->get('Authorization');
+        // $bearer = $request->headers->get('Authorization');
 
-        // dd($bearer);
+        // // dd($bearer);
 
-        $decodeToken = $jwtEncoder->decode($bearer);
-        dd($decodeToken);
+        // $decodeToken = $jwtEncoder->decode($bearer);
+        // dd($decodeToken);
 
-        // $decodedJwtToken = $this->jwtManager->decode($bearer);
-        dd('stop');
-        if ($decodeToken instanceof TokenInterface) {
+        // // $decodedJwtToken = $this->jwtManager->decode($bearer);
+        // dd('stop');
+        // if ($decodeToken instanceof TokenInterface) {
 
-            $user = $decodeToken->getUser();
-            dd($user);
-            return $user;
+        //     $user = $decodeToken->getUser();
+        //     dd($user);
+        //     return $user;
 
-        } else {
-            return null;
-        }
+        // } else {
+        //     return null;
+        // }
 
-        return new JsonResponse(
-            $serializer->serialize($userRepository->findAll(), "json", SerializationContext::create()->setGroups(array('list'))),
-            JsonResponse::HTTP_OK,
-            [],
-            true
-
-        );
         // return new JsonResponse(
         //     $serializer->serialize($userRepository->findAll(), "json", ["groups" => "list"]),
         //     JsonResponse::HTTP_OK,

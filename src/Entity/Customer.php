@@ -52,7 +52,7 @@ class Customer
     private $password;
 
     /**
-     * @ORM\OneToMany(targetEntity=User::class, mappedBy="customer")
+     * @ORM\OneToMany(targetEntity=User::class, mappedBy="customer" ,fetch="EAGER")
      *
      */
     private $users;
