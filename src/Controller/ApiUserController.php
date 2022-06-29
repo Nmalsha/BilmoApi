@@ -2,7 +2,6 @@
 
 namespace App\Controller;
 
-use App\Entity\Customer;
 use App\Entity\User;
 use App\Repository\CustomerRepository;
 use App\Repository\UserRepository;
@@ -182,37 +181,99 @@ class ApiUserController extends AbstractController
         EntityManagerInterface $manager,
         UrlGeneratorInterface $urlGenarator,
         User $user,
-        UserPasswordHasherInterface $passwordHasher
+        UserPasswordHasherInterface $passwordHasher,
+        UserRepository $userRepository,
+        CustomerRepository $customerRepository
 
     ) {
         // $data = $this->container->get('jms_serializer')->deserialize($request->getContent(), 'array', 'json');
         // $user = new User;
         // $form = $this->get('form.factory')->create(UserType::class, $user);
         // $form->submit($data);
-        $user->setCustomer($manager->getRepository(Customer::class)->findOneBy([]));
 
-        $manager = $this->getDoctrine()->getManager();
+        //decoding token
+        $decodedJwtToken = $this->jwtManager->decode($this->tokenStorageInterface->getToken());
+        if ($decodedJwtToken) {
 
-        $plaintextPassword = $user->getPassword();
+            //dd($decodedJwtToken);
+            //get email of the user
+            $userEmail = $decodedJwtToken['email'];
 
-        $hashedPassword = $passwordHasher->hashPassword(
-            $user,
-            $plaintextPassword
-        );
-        // dd($hashedPassword);
-        $user->setPassword($hashedPassword);
+            //load User using email address
+            $loadUser = $userRepository->loadUserByIdentifier($userEmail);
+            //check if the user is admin or not
+            // if($loadUser == "ROLE_ADMIN"){
 
-        // $user->setPassword
-        $manager->persist($user);
-        $manager->flush();
+            // }
+            $arrayRoles = $loadUser->getRoles();
 
-        return new JsonResponse(
-            $serializer->serialize($user, "json", SerializationContext::create()->setGroups(array('details'))),
-            JsonResponse::HTTP_CREATED,
-            ["Location" => $urlGenarator->generate("app_api_user_create", ["id" => $user->getId()])],
-            true
+            foreach ($arrayRoles as $role) {
 
-        );
+                if ($role == "ROLE_ADMIN") {
+                    //get admin client id
+                    $adminClientId = $loadUser->getCustomer()->getId();
+                    // set the client to the new user
+                    $user->setCustomer($customerRepository->findOneBy(['id' => $adminClientId]));
+                    $manager = $this->getDoctrine()->getManager();
+
+                    $plaintextPassword = $user->getPassword();
+
+                    $hashedPassword = $passwordHasher->hashPassword(
+                        $user,
+                        $plaintextPassword
+                    );
+                    // dd($hashedPassword);
+                    $user->setPassword($hashedPassword);
+
+                    // $user->setPassword
+                    $manager->persist($user);
+                    $manager->flush();
+
+                    return new JsonResponse(
+                        $serializer->serialize($user, "json", SerializationContext::create()->setGroups(array('details'))),
+                        JsonResponse::HTTP_CREATED,
+                        ["Location" => $urlGenarator->generate("app_api_user_create", ["id" => $user->getId()])],
+                        true
+
+                    );
+                    // $userClientId = $user->getCustomer()->getId();
+                    // dd($user->getCustomer()->getId());
+                    // if ($adminClientId === $userClientId) {
+                    //     return new JsonResponse(
+                    //         $serializer->serialize($user, "json", SerializationContext::create()->setGroups(array('details'))),
+                    //         JsonResponse::HTTP_OK,
+                    //         [],
+                    //         true
+
+                    //     );
+
+                    // } else {
+                    //     return new JsonResponse('You are not the admin of this user', Response::HTTP_NOT_FOUND);
+                    // }
+                    //if the role is admin catch the user client id and get all the users belongs to the client
+
+                    // $usersOfClient = $userRepository->findBy(['customer' => $loadUser->getCustomer()->getId()]);
+                    // return new JsonResponse(
+                    //     $serializer->serialize($usersOfClient, "json", SerializationContext::create()->setGroups(array('list'))),
+                    //     JsonResponse::HTTP_OK,
+                    //     [],
+                    //     true
+
+                    // );
+
+                } else {
+                    return new JsonResponse('You are not the admin user', Response::HTTP_NOT_FOUND);
+                }
+
+            }
+
+            ;
+        } else {
+            return new JsonResponse('The token was not found or expired', Response::HTTP_NOT_FOUND);
+        }
+
+        // $user->setCustomer($manager->getRepository(Customer::class)->findOneBy([]));
+
     }
 
     /**
