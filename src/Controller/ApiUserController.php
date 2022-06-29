@@ -14,6 +14,8 @@ use FOS\RestBundle\Controller\Annotations\View;
 use JMS\Serializer\DeserializationContext;
 use JMS\Serializer\SerializationContext;
 use JMS\Serializer\SerializerInterface;
+use Lexik\Bundle\JWTAuthenticationBundle\Encoder\JWTEncoderInterface;
+use Lexik\Bundle\JWTAuthenticationBundle\Services\JWTTokenManagerInterface;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\ParamConverter;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -22,21 +24,62 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
+use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
+use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 
 //use Symfony\Component\Serializer\SerializerInterface;
 
 class ApiUserController extends AbstractController
 {
 
+    public function __construct(TokenStorageInterface $tokenStorageInterface, JWTTokenManagerInterface $jwtManager, JWTEncoderInterface $jwtEncoder)
+    {
+        $this->jwtManager = $jwtManager;
+        $this->tokenStorageInterface = $tokenStorageInterface;
+        // $this->jwtEncoder = $jwtEncoder;
+    }
     /**
      * @Route("/api/users", name="app_api_users", methods={"GET"})
      * @return JsonResponse
      *
      */
-    public function index(UserRepository $userRepository, SerializerInterface $serializer): Response
+    public function index(JWTTokenManagerInterface $jwtManager, Request $request, UserRepository $userRepository, SerializerInterface $serializer, JWTEncoderInterface $jwtEncoder): Response
     {
+        //decoding token
+        $decodedJwtToken = $this->jwtManager->decode($this->tokenStorageInterface->getToken());
+        //dd($decodedJwtToken);
+        //get email of the user
+        $userEmail = $decodedJwtToken['email'];
+        //load User using email address
+        $loadUser = $userRepository->loadUserByIdentifier($userEmail);
+        //check if the user is admin or not
+        // if($loadUser == "ROLE_ADMIN"){
 
-        // dd($userRepository->findAll());
+        // }
+        $arrayRoles = $loadUser->getRoles();
+        foreach ($arrayRoles as $role) {
+            dd($role);
+        }
+
+        $bearer = $request->headers->get('Authorization');
+
+        // dd($bearer);
+
+        $decodeToken = $jwtEncoder->decode($bearer);
+        dd($decodeToken);
+
+        // $decodedJwtToken = $this->jwtManager->decode($bearer);
+        dd('stop');
+        if ($decodeToken instanceof TokenInterface) {
+
+            $user = $decodeToken->getUser();
+            dd($user);
+            return $user;
+
+        } else {
+            return null;
+        }
+
         return new JsonResponse(
             $serializer->serialize($userRepository->findAll(), "json", SerializationContext::create()->setGroups(array('list'))),
             JsonResponse::HTTP_OK,

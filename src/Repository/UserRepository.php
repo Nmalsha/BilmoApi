@@ -23,17 +23,25 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
     }
     public function loadUserByUsername(string $username)
     {
-        dd("ici");
-        return $this->createQueryBuilder("U")
-            ->where("U.email = :username")
-            ->orWhere("U.firstName = :username")
-            ->setParameter("username", $username)
-            ->getQuery()
-            ->getOneOrNullResult();
+        // return $this->createQueryBuilder("U")
+        //     ->where("U.email = :username")
+        //     ->orWhere("U.firstName = :username")
+        //     ->setParameter("username", $username)
+        //     ->getQuery()
+        //     ->getOneOrNullResult();
 
     }
-    public function loadUserByIdentifier($identifier)
+    public function loadUserByIdentifier(string $usernameOrEmail)
     {
+        $entityManager = $this->getEntityManager();
+        return $entityManager->createQuery(
+            'SELECT u
+            FROM App\Entity\User u
+            WHERE u.firstName = :query
+            OR u.email = :query'
+        )
+            ->setParameter('query', $usernameOrEmail)
+            ->getOneOrNullResult();
 
     }
     public function add(User $entity, bool $flush = false): void
