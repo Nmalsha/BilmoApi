@@ -4,7 +4,9 @@ namespace App\Controller;
 
 use App\Entity\User;
 use App\Repository\CustomerRepository;
+// use App\Exception\ResourceValidationException;
 use App\Repository\UserRepository;
+use App\Service\DecodeToken;
 use Doctrine\ORM\EntityManagerInterface;
 //use FOS\RestBundle\Controller\AbstractFOSRestController;
 use FOS\RestBundle\Controller\Annotations as Rest;
@@ -30,9 +32,10 @@ use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInt
 class ApiUserController extends AbstractController
 {
 
-    public function __construct(TokenStorageInterface $tokenStorageInterface, JWTTokenManagerInterface $jwtManager, JWTEncoderInterface $jwtEncoder)
+    public function __construct(TokenStorageInterface $tokenStorageInterface, JWTTokenManagerInterface $jwtManager, JWTEncoderInterface $jwtEncoder, DecodeToken $decodeToken)
     {
         $this->jwtManager = $jwtManager;
+        $this->decodeToken = $decodeToken;
         $this->tokenStorageInterface = $tokenStorageInterface;
         // $this->jwtEncoder = $jwtEncoder;
     }
@@ -41,46 +44,59 @@ class ApiUserController extends AbstractController
      * @return JsonResponse
      *
      */
-    public function index(JWTTokenManagerInterface $jwtManager, Request $request, CustomerRepository $customerRepository, UserRepository $userRepository, SerializerInterface $serializer, JWTEncoderInterface $jwtEncoder): Response
+    public function index(Request $request, CustomerRepository $customerRepository, UserRepository $userRepository, SerializerInterface $serializer, JWTEncoderInterface $jwtEncoder): Response
     {
+
         //decoding token
-        $decodedJwtToken = $this->jwtManager->decode($this->tokenStorageInterface->getToken());
-        if ($decodedJwtToken) {
+        //  $decodedJwtToken = $this->jwtManager->decode($this->tokenStorageInterface->getToken());
+        $decodedJwtToken = $this->decodeToken->loadUserInfo();
 
-            //dd($decodedJwtToken);
-            //get email of the user
-            $userEmail = $decodedJwtToken['email'];
-            //load User using email address
+        $userEmail = $decodedJwtToken['email'];
+        if ($this->decodeToken->userCan($userEmail, "ROLE_ADMIN")) {
             $loadUser = $userRepository->loadUserByIdentifier($userEmail);
-            //check if the user is admin or not
-            // if($loadUser == "ROLE_ADMIN"){
+            $usersOfClient = $userRepository->findBy(['customer' => $loadUser->getCustomer()->getId()]);
+            return new JsonResponse(
+                $serializer->serialize($usersOfClient, "json", SerializationContext::create()->setGroups(array('list'))),
+                JsonResponse::HTTP_OK,
+                [],
+                true
 
-            // }
-            $arrayRoles = $loadUser->getRoles();
-            foreach ($arrayRoles as $role) {
-                if ($role == "ROLE_ADMIN") {
+            );
 
-//if the role is admin catch the user client id and get all the users belongs to the client
-
-                    $usersOfClient = $userRepository->findBy(['customer' => $loadUser->getCustomer()->getId()]);
-                    return new JsonResponse(
-                        $serializer->serialize($usersOfClient, "json", SerializationContext::create()->setGroups(array('list'))),
-                        JsonResponse::HTTP_OK,
-                        [],
-                        true
-
-                    );
-
-                } else {
-                    return new JsonResponse('You are not the admin user', Response::HTTP_NOT_FOUND);
-                }
-
-            }
-
-            ;
-        } else {
-            return new JsonResponse('The token was not found or expired', Response::HTTP_NOT_FOUND);
         }
+
+        //dd($decodedJwtToken);
+        //get email of the user
+
+        //load User using email address
+        // $loadUser = $userRepository->loadUserByIdentifier($userEmail);
+        //check if the user is admin or not
+        // if($loadUser == "ROLE_ADMIN"){
+
+        // }
+        //             $arrayRoles = $loadUser->getRoles();
+        //             foreach ($arrayRoles as $role) {
+        //                 if ($role == "ROLE_ADMIN") {
+
+// //if the role is admin catch the user client id and get all the users belongs to the client
+
+//                     $usersOfClient = $userRepository->findBy(['customer' => $loadUser->getCustomer()->getId()]);
+        //                     return new JsonResponse(
+        //                         $serializer->serialize($usersOfClient, "json", SerializationContext::create()->setGroups(array('list'))),
+        //                         JsonResponse::HTTP_OK,
+        //                         [],
+        //                         true
+
+//                     );
+
+//                 } else {
+        //                     return new JsonResponse('You are not the admin user', Response::HTTP_NOT_FOUND);
+        //                 }
+
+//             }
+
+//             ;
+        //         }
 
     }
 
@@ -128,16 +144,6 @@ class ApiUserController extends AbstractController
                     } else {
                         return new JsonResponse('You are not the admin of this user', Response::HTTP_NOT_FOUND);
                     }
-                    //if the role is admin catch the user client id and get all the users belongs to the client
-
-                    // $usersOfClient = $userRepository->findBy(['customer' => $loadUser->getCustomer()->getId()]);
-                    // return new JsonResponse(
-                    //     $serializer->serialize($usersOfClient, "json", SerializationContext::create()->setGroups(array('list'))),
-                    //     JsonResponse::HTTP_OK,
-                    //     [],
-                    //     true
-
-                    // );
 
                 } else {
                     return new JsonResponse('You are not the admin user', Response::HTTP_NOT_FOUND);
@@ -149,25 +155,6 @@ class ApiUserController extends AbstractController
         } else {
             return new JsonResponse('The token was not found or expired', Response::HTTP_NOT_FOUND);
         }
-
-        // try {
-        //     return new JsonResponse(
-        //         $serializer->serialize($user, "json", SerializationContext::create()->setGroups(array('details'))),
-        //         JsonResponse::HTTP_OK,
-        //         [],
-        //         true
-
-        //     );
-        // } catch (Exception $e) {
-
-        //     return new JsonResponse(
-        //         ["error" => $e->getMessage()],
-        //         JsonResponse::HTTP_OK,
-        //         [],
-        //         true
-
-        //     );
-        // }
 
     }
 
@@ -184,9 +171,18 @@ class ApiUserController extends AbstractController
         UserPasswordHasherInterface $passwordHasher,
         UserRepository $userRepository,
         CustomerRepository $customerRepository
+        // ConstraintViolationList $violations
 
     ) {
 
+        // if (count($violations)) {
+        //     $message = 'The JSON sent contains invalid data. Here are the errors you need to correct: ';
+        //     foreach ($violations as $violation) {
+        //         $message .= sprintf("Field %s: %s ", $violation->getPropertyPath(), $violation->getMessage());
+        //     }
+
+        //     throw new ResourceValidationException($message);
+        // }
         //decoding token
         $decodedJwtToken = $this->jwtManager->decode($this->tokenStorageInterface->getToken());
         if ($decodedJwtToken) {
@@ -293,30 +289,76 @@ class ApiUserController extends AbstractController
             return new JsonResponse('The token was not found or expired', Response::HTTP_NOT_FOUND);
         }
 
-        // $object = $userRepository->findBy(["id" => $user->getId()]);
-        // $user = new DeserializationContext();
-        // $user->setAttribute('deserialization-constructor-target', $object);
-        // $serializer->deserialize(
-        //     $request->getContent(),
-        //     User::class, "json",
-        //     $user
-        // );
-        // $manager->flush();
-
-        // return new JsonResponse(null, JsonResponse::HTTP_NO_CONTENT);
     }
+
     /**
      * @Route("/api/user/{id}", name="app_api_user_delete",methods={"DELETE"})
      * @Rest\View
-     * @ParamConverter("user", converter="fos_rest.request_body")
      */
-    public function deleteUser(User $user, EntityManagerInterface $manager)
+    public function delete(User $user, EntityManagerInterface $manager, UserRepository $userRepository)
     {
+        // dd('ici');
+        // $manager->remove($user);
+        // $manager->flush();
+
+        // return new JsonResponse(null, JsonResponse::HTTP_NO_CONTENT);
+        // dd('ici');
+        // $this->init();
+
+        //decoding token
+        $decodedJwtToken = $this->jwtManager->decode($this->tokenStorageInterface->getToken());
+        // dd($decodedJwtToken);
+        if ($decodedJwtToken) {
+
+            //get email of the user
+            $userEmail = $decodedJwtToken['email'];
+
+            //load User using email address
+            $loadUser = $userRepository->loadUserByIdentifier($userEmail);
+            //check if the user is admin or not
+
+            $arrayRoles = $loadUser->getRoles();
+            // dd($arrayRoles);
+            foreach ($arrayRoles as $role) {
+                // dd($role);
+                if ($role == "ROLE_ADMIN") {
+                    $adminClientId = $loadUser->getCustomer()->getId();
+                    // dd($adminClientId);
+
+                    $userClientId = $user->getCustomer()->getId();
+                    // dd($adminClientId, $userClientId);
+
+                    // dd($user->getCustomer()->getId());
+                    if ($adminClientId === $userClientId) {
+
+                        $manager->remove($user);
+                        $manager->flush();
+
+                        return new JsonResponse(null, JsonResponse::HTTP_NO_CONTENT);
+                    } else {
+                        return new JsonResponse('You are not the autherized to realise this action', Response::HTTP_NOT_FOUND);
+                    }
+
+                } else {
+                    return new JsonResponse('You are not the admin user to delete a user', Response::HTTP_NOT_FOUND);
+                }
+
+            }
+
+            ;
+        } else {
+            return new JsonResponse('The token was not found or expired', Response::HTTP_NOT_FOUND);
+        }
 
         $manager->remove($user);
         $manager->flush();
 
         return new JsonResponse(null, JsonResponse::HTTP_NO_CONTENT);
+    }
+
+    public function init()
+    {
+
     }
 
 }
