@@ -20,4 +20,5 @@ services:
       - "../src/Entity/"
       - "../src/Kernel.php"
 
-  Symfony\Bridge\Doctrine\Security\User\UserLoaderInterface: '@App\Repository\UserRepository'
+  # Symfony\Bridge\Doctrine\Security\User\UserLoaderInterface: '@App\Repository\UserRepository'
+  # Symfony\Component\Validator\ConstraintViolationList: '@App\Controller\ApiUserController'
