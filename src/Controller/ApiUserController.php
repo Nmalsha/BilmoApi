@@ -80,15 +80,19 @@ class ApiUserController extends AbstractController
             $adminClientId = $loadUser->getCustomer()->getId();
 
             $userClientId = $user->getCustomer()->getId();
-            // check if the user is admin or not
-            if ($adminClientId === $userClientId) {
-                return new JsonResponse(
-                    $serializer->serialize($user, "json", SerializationContext::create()->setGroups(array('details'))),
-                    JsonResponse::HTTP_OK,
-                    [],
-                    true
+            // dd($user);
+            if ($user) {
+                // check if the user is admin or not
+                if ($adminClientId === $userClientId) {
+                    return new JsonResponse(
+                        $serializer->serialize($user, "json", SerializationContext::create()->setGroups(array('details'))),
+                        JsonResponse::HTTP_OK,
+                        [],
+                        true
 
-                );
+                    );
+
+                }
 
             }
 
@@ -109,15 +113,17 @@ class ApiUserController extends AbstractController
         UserPasswordHasherInterface $passwordHasher,
         UserRepository $userRepository,
         CustomerRepository $customerRepository
-        // ConstraintViolationList $violations
 
     ) {
+
         //decoding token true de service
         $decodedJwtToken = $this->decodeToken->loadUserInfo();
 
         $userEmail = $decodedJwtToken['email'];
         if ($this->decodeToken->userCan($userEmail, "ROLE_ADMIN")) {
+
             $loadUser = $userRepository->loadUserByIdentifier($userEmail);
+
             //get admin client id
             $adminClientId = $loadUser->getCustomer()->getId();
             // set the client to the new user
