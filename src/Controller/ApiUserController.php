@@ -44,23 +44,27 @@ class ApiUserController extends AbstractController
     public function index(Request $request, CustomerRepository $customerRepository, UserRepository $userRepository, SerializerInterface $serializer, JWTEncoderInterface $jwtEncoder): Response
     {
 
-        //decoding token true de service
+        try
+        {
+            //decoding token true de service
+            $decodedJwtToken = $this->decodeToken->loadUserInfo();
+            $userEmail = $decodedJwtToken['email'];
+            if ($this->decodeToken->userCan($userEmail, "ROLE_ADMIN")) {
+                $loadUser = $userRepository->loadUserByIdentifier($userEmail);
+                //if the role is admin catch the user client id and get all the users belongs to the client
+                $usersOfClient = $userRepository->findBy(['customer' => $loadUser->getCustomer()->getId()]);
+                return new JsonResponse(
+                    $serializer->serialize($usersOfClient, "json", SerializationContext::create()->setGroups(array('list'))),
+                    JsonResponse::HTTP_OK,
+                    [],
+                    true
 
-        $decodedJwtToken = $this->decodeToken->loadUserInfo();
+                );
 
-        $userEmail = $decodedJwtToken['email'];
-        if ($this->decodeToken->userCan($userEmail, "ROLE_ADMIN")) {
-            $loadUser = $userRepository->loadUserByIdentifier($userEmail);
-            //if the role is admin catch the user client id and get all the users belongs to the client
-            $usersOfClient = $userRepository->findBy(['customer' => $loadUser->getCustomer()->getId()]);
-            return new JsonResponse(
-                $serializer->serialize($usersOfClient, "json", SerializationContext::create()->setGroups(array('list'))),
-                JsonResponse::HTTP_OK,
-                [],
-                true
+            }
 
-            );
-
+        } catch (\Exception $e) {
+            error_log($e->getMessage());
         }
 
     }
@@ -71,32 +75,63 @@ class ApiUserController extends AbstractController
      */
     public function showUser(User $user, SerializerInterface $serializer, UserRepository $userRepository)
     {
-        //decoding token true de service
-        $decodedJwtToken = $this->decodeToken->loadUserInfo();
 
-        $userEmail = $decodedJwtToken['email'];
-        if ($this->decodeToken->userCan($userEmail, "ROLE_ADMIN")) {
-            $loadUser = $userRepository->loadUserByIdentifier($userEmail);
-            $adminClientId = $loadUser->getCustomer()->getId();
+        try {
+            //decoding token true de service
+            $decodedJwtToken = $this->decodeToken->loadUserInfo();
+            $userEmail = $decodedJwtToken['email'];
+            if ($this->decodeToken->userCan($userEmail, "ROLE_ADMIN")) {
+                $loadUser = $userRepository->loadUserByIdentifier($userEmail);
+                $adminClientId = $loadUser->getCustomer()->getId();
 
-            $userClientId = $user->getCustomer()->getId();
-            // dd($user);
-            if ($user) {
-                // check if the user is admin or not
-                if ($adminClientId === $userClientId) {
-                    return new JsonResponse(
-                        $serializer->serialize($user, "json", SerializationContext::create()->setGroups(array('details'))),
-                        JsonResponse::HTTP_OK,
-                        [],
-                        true
+                $userClientId = $user->getCustomer()->getId();
+                // dd($user);
+                if ($user) {
+                    // check if the user is admin or not
+                    if ($adminClientId === $userClientId) {
+                        return new JsonResponse(
+                            $serializer->serialize($user, "json", SerializationContext::create()->setGroups(array('details'))),
+                            JsonResponse::HTTP_OK,
+                            [],
+                            true
 
-                    );
+                        );
+
+                    }
 
                 }
 
             }
 
+        } catch (\Exception $e) {
+            error_log($e->getMessage());
         }
+
+        // $decodedJwtToken = $this->decodeToken->loadUserInfo();
+
+        // $userEmail = $decodedJwtToken['email'];
+        // if ($this->decodeToken->userCan($userEmail, "ROLE_ADMIN")) {
+        //     $loadUser = $userRepository->loadUserByIdentifier($userEmail);
+        //     $adminClientId = $loadUser->getCustomer()->getId();
+
+        //     $userClientId = $user->getCustomer()->getId();
+        //     // dd($user);
+        //     if ($user) {
+        //         // check if the user is admin or not
+        //         if ($adminClientId === $userClientId) {
+        //             return new JsonResponse(
+        //                 $serializer->serialize($user, "json", SerializationContext::create()->setGroups(array('details'))),
+        //                 JsonResponse::HTTP_OK,
+        //                 [],
+        //                 true
+
+        //             );
+
+        //         }
+
+        //     }
+
+        // }
 
     }
 
@@ -116,41 +151,81 @@ class ApiUserController extends AbstractController
 
     ) {
 
-        //decoding token true de service
-        $decodedJwtToken = $this->decodeToken->loadUserInfo();
+        try {
+            //decoding token true de service
+            $decodedJwtToken = $this->decodeToken->loadUserInfo();
 
-        $userEmail = $decodedJwtToken['email'];
-        if ($this->decodeToken->userCan($userEmail, "ROLE_ADMIN")) {
+            $userEmail = $decodedJwtToken['email'];
+            if ($this->decodeToken->userCan($userEmail, "ROLE_ADMIN")) {
 
-            $loadUser = $userRepository->loadUserByIdentifier($userEmail);
+                $loadUser = $userRepository->loadUserByIdentifier($userEmail);
 
-            //get admin client id
-            $adminClientId = $loadUser->getCustomer()->getId();
-            // set the client to the new user
-            $user->setCustomer($customerRepository->findOneBy(['id' => $adminClientId]));
-            $manager = $this->getDoctrine()->getManager();
+                //get admin client id
+                $adminClientId = $loadUser->getCustomer()->getId();
+                // set the client to the new user
+                $user->setCustomer($customerRepository->findOneBy(['id' => $adminClientId]));
+                $manager = $this->getDoctrine()->getManager();
 
-            $plaintextPassword = $user->getPassword();
+                $plaintextPassword = $user->getPassword();
 
-            $hashedPassword = $passwordHasher->hashPassword(
-                $user,
-                $plaintextPassword
-            );
+                $hashedPassword = $passwordHasher->hashPassword(
+                    $user,
+                    $plaintextPassword
+                );
 
-            $user->setPassword($hashedPassword);
+                $user->setPassword($hashedPassword);
 
-            $manager->persist($user);
-            $manager->flush();
+                $manager->persist($user);
+                $manager->flush();
 
-            return new JsonResponse(
-                $serializer->serialize($user, "json", SerializationContext::create()->setGroups(array('details'))),
-                JsonResponse::HTTP_CREATED,
-                ["Location" => $urlGenarator->generate("app_api_user_create", ["id" => $user->getId()])],
-                true
+                return new JsonResponse(
+                    $serializer->serialize($user, "json", SerializationContext::create()->setGroups(array('details'))),
+                    JsonResponse::HTTP_CREATED,
+                    ["Location" => $urlGenarator->generate("app_api_user_create", ["id" => $user->getId()])],
+                    true
 
-            );
+                );
 
+            }
+
+        } catch (\Exception $e) {
+            error_log($e->getMessage());
         }
+
+        // $decodedJwtToken = $this->decodeToken->loadUserInfo();
+
+        // $userEmail = $decodedJwtToken['email'];
+        // if ($this->decodeToken->userCan($userEmail, "ROLE_ADMIN")) {
+
+        //     $loadUser = $userRepository->loadUserByIdentifier($userEmail);
+
+        //     //get admin client id
+        //     $adminClientId = $loadUser->getCustomer()->getId();
+        //     // set the client to the new user
+        //     $user->setCustomer($customerRepository->findOneBy(['id' => $adminClientId]));
+        //     $manager = $this->getDoctrine()->getManager();
+
+        //     $plaintextPassword = $user->getPassword();
+
+        //     $hashedPassword = $passwordHasher->hashPassword(
+        //         $user,
+        //         $plaintextPassword
+        //     );
+
+        //     $user->setPassword($hashedPassword);
+
+        //     $manager->persist($user);
+        //     $manager->flush();
+
+        //     return new JsonResponse(
+        //         $serializer->serialize($user, "json", SerializationContext::create()->setGroups(array('details'))),
+        //         JsonResponse::HTTP_CREATED,
+        //         ["Location" => $urlGenarator->generate("app_api_user_create", ["id" => $user->getId()])],
+        //         true
+
+        //     );
+
+        // }
 
     }
 
@@ -161,25 +236,48 @@ class ApiUserController extends AbstractController
      */
     public function updateUser(User $user, Request $request, SerializerInterface $serializer, EntityManagerInterface $manager, UserRepository $userRepository)
     {
-        //decoding token true de service
-        $decodedJwtToken = $this->decodeToken->loadUserInfo();
 
-        $userEmail = $decodedJwtToken['email'];
-        if ($this->decodeToken->userCan($userEmail, "ROLE_ADMIN")) {
+        try {
+            //decoding token true de service
+            $decodedJwtToken = $this->decodeToken->loadUserInfo();
 
-            $object = $userRepository->findBy(["id" => $user->getId()]);
-            $user = new DeserializationContext();
-            $user->setAttribute('deserialization-constructor-target', $object);
-            $serializer->deserialize(
-                $request->getContent(),
-                User::class, "json",
-                $user
-            );
-            $manager->flush();
+            $userEmail = $decodedJwtToken['email'];
+            if ($this->decodeToken->userCan($userEmail, "ROLE_ADMIN")) {
 
-            return new JsonResponse(null, JsonResponse::HTTP_NO_CONTENT);
+                $object = $userRepository->findBy(["id" => $user->getId()]);
+                $user = new DeserializationContext();
+                $user->setAttribute('deserialization-constructor-target', $object);
+                $serializer->deserialize(
+                    $request->getContent(),
+                    User::class, "json",
+                    $user
+                );
+                $manager->flush();
 
+                return new JsonResponse(null, JsonResponse::HTTP_NO_CONTENT);
+
+            }
+        } catch (\Exception $e) {
+            error_log($e->getMessage());
         }
+        // $decodedJwtToken = $this->decodeToken->loadUserInfo();
+
+        // $userEmail = $decodedJwtToken['email'];
+        // if ($this->decodeToken->userCan($userEmail, "ROLE_ADMIN")) {
+
+        //     $object = $userRepository->findBy(["id" => $user->getId()]);
+        //     $user = new DeserializationContext();
+        //     $user->setAttribute('deserialization-constructor-target', $object);
+        //     $serializer->deserialize(
+        //         $request->getContent(),
+        //         User::class, "json",
+        //         $user
+        //     );
+        //     $manager->flush();
+
+        //     return new JsonResponse(null, JsonResponse::HTTP_NO_CONTENT);
+
+        // }
 
     }
 
@@ -189,26 +287,50 @@ class ApiUserController extends AbstractController
      */
     public function delete(User $user, EntityManagerInterface $manager, UserRepository $userRepository)
     {
-        //decoding token true de service
-        $decodedJwtToken = $this->decodeToken->loadUserInfo();
+        try {
+            //decoding token true de service
+            $decodedJwtToken = $this->decodeToken->loadUserInfo();
 
-        $userEmail = $decodedJwtToken['email'];
-        if ($this->decodeToken->userCan($userEmail, "ROLE_ADMIN")) {
-            $loadUser = $userRepository->loadUserByIdentifier($userEmail);
-            $adminClientId = $loadUser->getCustomer()->getId();
+            $userEmail = $decodedJwtToken['email'];
+            if ($this->decodeToken->userCan($userEmail, "ROLE_ADMIN")) {
+                $loadUser = $userRepository->loadUserByIdentifier($userEmail);
+                $adminClientId = $loadUser->getCustomer()->getId();
 
-            $userClientId = $user->getCustomer()->getId();
+                $userClientId = $user->getCustomer()->getId();
 //check if the user is admin or not
-            if ($adminClientId === $userClientId) {
+                if ($adminClientId === $userClientId) {
 
-                $manager->remove($user);
-                $manager->flush();
+                    $manager->remove($user);
+                    $manager->flush();
 
-                return new JsonResponse(null, JsonResponse::HTTP_NO_CONTENT);
+                    return new JsonResponse(null, JsonResponse::HTTP_NO_CONTENT);
+
+                }
 
             }
-
+        } catch (\Exception $e) {
+            error_log($e->getMessage());
         }
+//         //decoding token true de service
+        //         $decodedJwtToken = $this->decodeToken->loadUserInfo();
+
+//         $userEmail = $decodedJwtToken['email'];
+        //         if ($this->decodeToken->userCan($userEmail, "ROLE_ADMIN")) {
+        //             $loadUser = $userRepository->loadUserByIdentifier($userEmail);
+        //             $adminClientId = $loadUser->getCustomer()->getId();
+
+//             $userClientId = $user->getCustomer()->getId();
+        // //check if the user is admin or not
+        //             if ($adminClientId === $userClientId) {
+
+//                 $manager->remove($user);
+        //                 $manager->flush();
+
+//                 return new JsonResponse(null, JsonResponse::HTTP_NO_CONTENT);
+
+//             }
+
+//         }
 
     }
 }
