@@ -24,17 +24,3 @@ private_key_path: %kernel.root_dir%/../var/jwt/private.pem
 public_key_path: %kernel.root_dir%/../var/jwt/public.pem
 pass_phrase: %jwt_key_pass_phrase%
 token_ttl: 3600
-
-    Test jwt console
-
-$ bin/console debug:container jwt
-
-    Get a JWT Token:
-
-$ curl -X POST -H "Content-Type: application/json" http://localhost:8000/login_check -d '{"username":"johnmack","password":"test"}'
--> { "token": "[TOKEN]" }
-
-    Example of accessing secured routes:
-
-$ curl -H "Authorization: Bearer [TOKEN]" http://localhost:8000/api
--> Logged in as johnmack

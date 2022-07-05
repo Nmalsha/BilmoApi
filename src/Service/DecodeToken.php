@@ -9,7 +9,6 @@ use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInt
 
 class DecodeToken
 {
-    // SerializerInterfaceprivate $serializer;
 
     public function __construct(SerializerInterface $serializer, JWTTokenManagerInterface $jwtManager, UserRepository $userRepository, TokenStorageInterface $tokenStorageInterface)
     {
