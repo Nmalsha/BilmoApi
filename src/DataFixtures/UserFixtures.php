@@ -20,6 +20,7 @@ class UserFixtures extends Fixture
     {
         $faker = Factory::create('fr_FR');
         $customers = $this->customerRepository->findAll();
+        $onecustomer = $this->customerRepository->findOneBy([]);
 
         //$customers = $this->getDoctrine()->getRepository(Customer::class)->findAll();
         foreach ($customers as $customer) {
@@ -38,7 +39,25 @@ class UserFixtures extends Fixture
                     ->setCustomer($customer);
                 $manager->persist($user);
             }
+
         }
+
+        $user = new User();
+        $hashedPassword = $this->hasher->hashPassword(
+            $user,
+            "admin123"
+        );
+        $user->setFirstName('admin')
+            ->setLastName('user1')
+            ->setContactNumber(0000000)
+            ->setEmail('admin@gmail.com')
+            ->setPassword($hashedPassword)
+            ->setRole(["ROLE_USER", "ROLE_ADMIN"])
+            ->setCustomer($onecustomer);
+
+        $manager->persist($user);
+
         $manager->flush();
+
     }
 }

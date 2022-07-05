@@ -2,7 +2,7 @@
 
 ## Project 7 - Parcours développeur d'application PHP/Symfony
 
-I build this project to learn symfony (using v 5.4).
+I build this project to learn to create API using symfony (using v 5.4).
 
 ### Configuration jwt
 

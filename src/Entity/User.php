@@ -52,7 +52,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     private $contactNumber;
 
     /**
-     * @ORM\Column(type="array", length=255,nullable=true )
+     * @ORM\Column(type="json", length=255,nullable=true )
      * @Serializer\Groups({ "list","details"})
      */
     private $roles = [];
@@ -132,8 +132,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     {
 
         $roles = $this->roles;
-        // // guarantee every user at least has ROLE_USER
-        $roles[] = 'ROLE_USER';
 
         return array_unique($roles);
 
@@ -141,7 +139,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     public function setRole(array $role): self
     {
-        $this->role = $role;
+        $this->roles = $role;
 
         return $this;
     }
