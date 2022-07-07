@@ -24,6 +24,9 @@ use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
 
+/**
+ *
+ */
 class ApiUserController extends AbstractController
 {
 
@@ -37,7 +40,9 @@ class ApiUserController extends AbstractController
     }
     /**
      * @Route("/api/users", name="app_api_users", methods={"GET"})
+     *
      * @return JsonResponse
+     *
      *
      */
     public function index(Request $request, CustomerRepository $customerRepository, UserRepository $userRepository, SerializerInterface $serializer, JWTEncoderInterface $jwtEncoder): Response

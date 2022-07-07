@@ -17,6 +17,7 @@
     "jms/serializer-bundle": "^4.0",
     "knplabs/knp-paginator-bundle": "^5.8",
     "lexik/jwt-authentication-bundle": "^2.16",
+    "nelmio/api-doc-bundle": "^4.9",
     "nelmio/cors-bundle": "^2.2",
     "phpdocumentor/reflection-docblock": "^5.3",
     "phpstan/phpdoc-parser": "^1.5",
@@ -50,7 +51,8 @@
     "symfony/webpack-encore-bundle": "^1.12",
     "symfony/yaml": "*",
     "twig/extra-bundle": "^2.12|^3.0",
-    "twig/twig": "^2.12|^3.0"
+    "twig/twig": "^2.12|^3.0",
+    "zircote/swagger-php": "^4.4"
   },
   "require-dev": {
     "doctrine/doctrine-fixtures-bundle": "^3.4",
@@ -94,7 +96,7 @@
     "auto-scripts": {
       "cache:clear": "symfony-cmd",
       "assets:install %PUBLIC_DIR%": "symfony-cmd",
-      "lexik:jwt:generate-keypair": "symfony-cmd"
+      "lexik:jwt:generate-keypair --overwrite": "symfony-cmd"
     },
     "post-install-cmd": [
       "@auto-scripts"
