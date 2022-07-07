@@ -21,11 +21,11 @@ git clone https://github.com/ampueropierre/api-bilemo.git
 
 Installer les dépendances
 
-composer install
+    composer install
 
 #Créer la BDD
 
-php bin/console doctrine:database:create
+    php bin/console doctrine:database:create
 
 #Créer les tables
 
@@ -33,11 +33,11 @@ php bin/console doctrine:schema:create
 
 #Installer la Fixture (démo de données fictives)
 
-php bin/console doctrine:fixture:load
+        php bin/console doctrine:fixture:load
 
 #URL de la documentation
 
-http://localhost:8000/api/doc
+    http://localhost:8000/api/doc
 
 Tester les requêtes avec un compte User
 
