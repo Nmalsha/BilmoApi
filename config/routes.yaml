@@ -3,3 +3,26 @@
 #    controller: App\Controller\DefaultController::index
 api_login_check:
   path: /api/login_check
+  # config/routes.yaml
+  # app.swagger_ui:
+  #   path: /api/doc
+  #   methods: GET
+  #   defaults: { _controller: nelmio_api_doc.controller.swagger_ui }
+# api_doc:
+#   app.swagger:
+#     path: /api/doc
+#     methods: GET
+#     defaults: { _controller: nelmio_api_doc.controller.swagger }
+#app/config/routing.yml
+# nelmio_api_swagger:
+#   resource: "@NelmioApiDocBundle/Resources/config/swagger_routing.yml"
+#   prefix: /api-docs
+# config/routes.yaml
+app.swagger:
+  path: /api/doc
+  methods: GET
+  defaults: { _controller: nelmio_api_doc.controller.swagger }
+app.swagger_ui:
+  path: /api/doc-ui
+  methods: GET
+  defaults: { _controller: nelmio_api_doc.controller.swagger_ui }

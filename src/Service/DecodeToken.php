@@ -12,6 +12,7 @@ class DecodeToken
 
     public function __construct(SerializerInterface $serializer, JWTTokenManagerInterface $jwtManager, UserRepository $userRepository, TokenStorageInterface $tokenStorageInterface)
     {
+
         $this->serializer = $serializer;
         $this->jwtManager = $jwtManager;
         $this->tokenStorageInterface = $tokenStorageInterface;
@@ -29,7 +30,9 @@ class DecodeToken
     public function userCan($userEmail, $userRole)
     {
         $loadUser = $this->userRepository->loadUserByIdentifier($userEmail);
+
         $arrayRoles = $loadUser->getRoles();
+
         foreach ($arrayRoles as $role) {
             if ($role == $userRole) {
                 return true;

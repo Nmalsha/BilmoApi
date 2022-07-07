@@ -6,6 +6,7 @@ use ApiPlatform\Core\Annotation\ApiResource;
 use App\Repository\UserRepository;
 use Doctrine\ORM\Mapping as ORM;
 use JMS\Serializer\Annotation as Serializer;
+use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Serializer\Annotation\Groups;
@@ -14,6 +15,7 @@ use Symfony\Component\Validator\Constraints as Assert;
 /**
  * @ApiResource()
  * @ORM\Entity(repositoryClass=UserRepository::class)
+ * @UniqueEntity(fields={"email"}, message="Un compte avec ce email existe déjà!")
  */
 class User implements UserInterface, PasswordAuthenticatedUserInterface
 {
@@ -52,7 +54,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     private $contactNumber;
 
     /**
-     * @ORM\Column(type="array", length=255,nullable=true )
+     * @ORM\Column(type="json", length=255,nullable=true )
      * @Serializer\Groups({ "list","details"})
      */
     private $roles = [];
@@ -132,8 +134,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     {
 
         $roles = $this->roles;
-        // // guarantee every user at least has ROLE_USER
-        $roles[] = 'ROLE_USER';
 
         return array_unique($roles);
 
@@ -141,7 +141,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     public function setRole(array $role): self
     {
-        $this->role = $role;
+        $this->roles = $role;
 
         return $this;
     }

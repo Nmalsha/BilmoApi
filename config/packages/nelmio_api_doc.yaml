@@ -1,0 +1,52 @@
+nelmio_api_doc:
+  documentation:
+    paths:
+      /api/login_check:
+        post:
+          tags:
+            - Token
+          operationId: postCredentialsItem
+          summary: Retrieves your JWT when your login and paste it in the Authorize field.
+          requestBody:
+            description: Create a new JWT
+            content:
+              application/json:
+                schema:
+                  $ref: "#/components/schemas/Authorize"
+          responses:
+            "200":
+              description: Return JWT
+              content:
+                application/json:
+                  schema:
+                    $ref: "#/components/schemas/Token"
+    components:
+      schemas:
+        Token:
+          type: object
+          properties:
+            token:
+              type: string
+              readOnly: true
+        Authorize:
+          type: object
+          properties:
+            username:
+              type: string
+              default: exemple@gmail.com
+            password:
+              type: string
+              default: password
+      securitySchemes:
+        bearerAuth:
+          in: header
+          name: Authorization # or another header name
+          type: http
+          scheme: bearer
+          bearerFormat: JWT
+    security:
+      - bearerAuth: []
+  areas: # to filter documented areas
+    path_patterns:
+      - ^/api(?!/doc$) # Accepts routes under /api except /api/doc
+    disable_default_routes: true
