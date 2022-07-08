@@ -71,7 +71,7 @@ class ApiUserController extends AbstractController
     }
 
     /**
-     * @Route("/api/user/{id}", name="app_api_user_show",methods={"GET"})
+     * @Route("/api/users/{id}", name="app_api_user_show",methods={"GET"})
      *
      */
     public function showUser(User $user, SerializerInterface $serializer, UserRepository $userRepository)
@@ -111,7 +111,7 @@ class ApiUserController extends AbstractController
     }
 
     /**
-     * @Route("/api/user", name="app_api_user_create",methods={"POST"})
+     * @Route("/api/users", name="app_api_user_create",methods={"POST"})
      * @Rest\View
      * @ParamConverter("user", converter="fos_rest.request_body")
      */
@@ -149,7 +149,7 @@ class ApiUserController extends AbstractController
                     $plaintextPassword
                 );
 
-                // $user->setRole(["ROLE_USER"]);
+                $user->setRole(["ROLE_USER"]);
                 $user->setPassword($hashedPassword);
 
                 $manager->persist($user);
@@ -172,7 +172,7 @@ class ApiUserController extends AbstractController
     }
 
     /**
-     * @Route("/api/user/{id}", name="app_api_user_update",methods={"PUT"})
+     * @Route("/api/users/{id}", name="app_api_user_update",methods={"PUT"})
      * @Rest\View
      * @ParamConverter("user", converter="fos_rest.request_body")
      */
@@ -206,7 +206,7 @@ class ApiUserController extends AbstractController
     }
 
     /**
-     * @Route("/api/user/{id}", name="app_api_user_delete",methods={"DELETE"})
+     * @Route("/api/users/{id}", name="app_api_user_delete",methods={"DELETE"})
      * @Rest\View
      */
     public function delete(User $user, EntityManagerInterface $manager, UserRepository $userRepository)

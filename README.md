@@ -17,7 +17,7 @@ I build this project to learn to create API using symfony (using v 5.4).
 
 #Clonez le repository Github
 
-git clone https://github.com/ampueropierre/api-bilemo.git
+    git clone https://github.com/ampueropierre/api-bilemo.git
 
 Installer les dépendances
 
@@ -29,7 +29,7 @@ Installer les dépendances
 
 #Créer les tables
 
-php bin/console doctrine:schema:create
+    php bin/console doctrine:schema:create
 
 #Installer la Fixture (démo de données fictives)
 
