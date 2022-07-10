@@ -53,6 +53,7 @@ class Product
 
     /**
      * @ORM\OneToMany(targetEntity=Images::class, mappedBy="product")
+     * @Serializer\Groups({"list"})
      */
     private $images;
 

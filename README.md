@@ -4,23 +4,45 @@
 
 I build this project to learn to create API using symfony (using v 5.4).
 
-### Configuration jwt
+### Environnement de développement
 
-    Jwt Generating the Public and Private Key
+    -Linux
+    -Composer 2.3.7
+    -PHP 7.4.3
+    -Apache2
+    -MySQL
+    -git
 
-composer require lexik/jwt-authentication-bundle
+### Instalation
 
-    Generating the Public and Private Key
+#Clonez le repository Github
 
-$ mkdir config/jwt
-$ openssl genrsa -out config/jwt/private.pem -aes256 4096
-$ openssl rsa -pubout -in config/jwt/private.pem -out config/jwt/public.pem
-Password jwt: 543565376YYHD1947
+    git clone https://github.com/ampueropierre/api-bilemo.git
 
-    Configuring the Bundle
+Installer les dépendances
 
-lexik_jwt_authentication:
-private_key_path: %kernel.root_dir%/../var/jwt/private.pem
-public_key_path: %kernel.root_dir%/../var/jwt/public.pem
-pass_phrase: %jwt_key_pass_phrase%
-token_ttl: 3600
+    composer install
+
+#Créer la BDD
+
+    php bin/console doctrine:database:create
+
+#Créer les tables
+
+    php bin/console doctrine:schema:create
+
+#Installer la Fixture (démo de données fictives)
+
+        php bin/console doctrine:fixture:load
+
+#URL de la documentation
+
+    http://localhost:8000/api/doc
+
+Tester les requêtes avec un compte User
+
+    login: admin@gmail.com
+
+    password: admin123
+
+Enjoy !
