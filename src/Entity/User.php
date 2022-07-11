@@ -59,7 +59,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
      */
     private $roles = [];
     /**
-     * @ORM\Column(type="string", length=255)
+     * @ORM\Column(type="string", length=255, unique=true)
      * @Serializer\Groups({ "details"})
      */
     private $email;
