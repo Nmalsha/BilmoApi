@@ -23,12 +23,6 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
     }
     public function loadUserByUsername(string $username)
     {
-        // return $this->createQueryBuilder("U")
-        //     ->where("U.email = :username")
-        //     ->orWhere("U.firstName = :username")
-        //     ->setParameter("username", $username)
-        //     ->getQuery()
-        //     ->getOneOrNullResult();
 
     }
     public function loadUserByIdentifier(string $usernameOrEmail)
@@ -62,28 +56,4 @@ class UserRepository extends ServiceEntityRepository implements UserLoaderInterf
         }
     }
 
-//    /**
-    //     * @return User[] Returns an array of User objects
-    //     */
-    //    public function findByExampleField($value): array
-    //    {
-    //        return $this->createQueryBuilder('u')
-    //            ->andWhere('u.exampleField = :val')
-    //            ->setParameter('val', $value)
-    //            ->orderBy('u.id', 'ASC')
-    //            ->setMaxResults(10)
-    //            ->getQuery()
-    //            ->getResult()
-    //        ;
-    //    }
-
-//    public function findOneBySomeField($value): ?User
-    //    {
-    //        return $this->createQueryBuilder('u')
-    //            ->andWhere('u.exampleField = :val')
-    //            ->setParameter('val', $value)
-    //            ->getQuery()
-    //            ->getOneOrNullResult()
-    //        ;
-    //    }
 }

@@ -35,7 +35,7 @@ class UserProvider implements UserProviderInterface
 
     public function refreshUser(UserInterface $user)
     {
-        // TODO: Implement refreshUser() method.
+
     }
 
     public function supportsClass(string $class)
