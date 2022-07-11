@@ -169,6 +169,11 @@ class ApiUserController extends AbstractController
             error_log($e->getMessage());
         }
 
+        return new JsonResponse(
+            'User already exist'
+
+        );
+
     }
 
     /**
