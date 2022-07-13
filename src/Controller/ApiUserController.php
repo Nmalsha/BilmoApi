@@ -36,7 +36,7 @@ class ApiUserController extends AbstractController
         $this->jwtManager = $jwtManager;
         $this->decodeToken = $decodeToken;
         $this->tokenStorageInterface = $tokenStorageInterface;
-        // $this->jwtEncoder = $jwtEncoder;
+
     }
     /**
      * @Route("/api/users", name="app_api_users", methods={"GET"})
@@ -67,6 +67,10 @@ class ApiUserController extends AbstractController
             );
 
         }
+        return new JsonResponse(
+            'You are not authorized to get the list of users'
+
+        );
 
     }
 
@@ -86,7 +90,7 @@ class ApiUserController extends AbstractController
                 $adminClientId = $loadUser->getCustomer()->getId();
 
                 $userClientId = $user->getCustomer()->getId();
-                // dd($user);
+
                 if ($user) {
                     // check if the user is admin or not
                     if ($adminClientId === $userClientId) {
@@ -103,6 +107,10 @@ class ApiUserController extends AbstractController
                 }
 
             }
+            return new JsonResponse(
+                'You are not authorized to get the details of user'
+
+            );
 
         } catch (\Exception $e) {
             error_log($e->getMessage());
@@ -204,6 +212,7 @@ class ApiUserController extends AbstractController
                 return new JsonResponse(null, JsonResponse::HTTP_NO_CONTENT);
 
             }
+
         } catch (\Exception $e) {
             error_log($e->getMessage());
         }
